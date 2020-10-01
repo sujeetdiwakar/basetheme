@@ -371,6 +371,81 @@ function adjust_main_queries( $query ) {
 
 			$query->set( 'posts_per_page', 12 );
 		}
+		
+		if ( $query->is_tax() || is_post_type_archive( 'package' ) ) {
+
+				$query->set( 'order', 'asc' );
+
+				if ( isset( $_GET['pk'] ) && ! empty( $_GET['pk'] ) ) {
+					$query->set( 's', esc_attr( $_GET['pk'] ) );
+				}
+
+				if ( isset( $_GET['qtr'] ) && ! empty( $_GET['qtr'] ) ) {
+					$query->set( 'tax_query', '' );
+					$items = esc_attr( $_GET['qtr'] );
+					$qs    = explode( '|', $items );
+
+					$tax_query[] = [
+						'taxonomy' => 'filter_cat',
+						'field'    => 'slug',
+						'terms'    => $qs,
+					];
+					$query->set( 'tax_query', $tax_query );
+				}
+
+				if ( isset( $_GET['price'] ) && ! empty( $_GET['price'] ) ) {
+
+					$price = esc_attr( $_GET['price'] );
+					$p     = explode( ',', $price );
+
+					if ( ! empty( $p ) && is_array( $p ) ) {
+						$query->set( 'meta_query', [
+								[
+									'key'     => 'price',
+									'value'   => [ $p[0], $p[1] ],
+									'compare' => 'between',
+									'type'    => 'numeric'
+								]
+							]
+						);
+					}
+				}
+
+				if ( isset( $_GET['qr'] ) && ! empty( $_GET['qr'] ) ) {
+
+					$ratings = esc_attr( $_GET['qr'] );
+					$stars   = explode( '|', $ratings );
+
+					$package_ids = get_post_by_ratings( $stars );
+
+					if ( ! empty( $package_ids ) && is_array( $package_ids ) ) {
+						$query->set( 'post__in', $package_ids );
+					} else {
+						$query->set( 'post__in', [ 0 ] );
+					}
+				}
+
+				if ( isset( $_GET['ord'] ) && ! empty( $_GET['ord'] ) ) {
+
+					if ( $_GET['ord'] == 'low' || $_GET['ord'] == 'high' || $_GET['ord'] == 'alphabet' ) {
+
+						$order = esc_attr( $_GET['ord'] );
+
+						if ( $order == 'high' ) {
+							$query->set( 'meta_key', 'price' );
+							$query->set( 'orderby', 'meta_value_num' );
+							$query->set( 'order', 'desc' );
+						} elseif ( $order == 'low' ) {
+							$query->set( 'meta_key', 'price' );
+							$query->set( 'orderby', 'meta_value_num' );
+							$query->set( 'order', 'asc' );
+						} elseif ( $order == 'alphabet' ) {
+							$query->set( 'orderby', 'title' );
+							$query->set( 'order', 'asc' );
+						}
+					}
+				}
+			}
 
 		if ( is_tax() || is_post_type_archive( 'movie' ) ) {
 
