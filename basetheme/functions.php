@@ -74,6 +74,23 @@ function register_my_menus() {
 add_action( 'init', 'register_my_menus' );
 // wp nav menu option end here
 
+
+
+// side bar option start here
+if ( function_exists( 'register_sidebar' ) ) {
+
+	register_sidebar( [
+		'name'          => 'Footer Widgets',
+		'id'            => 'footer_widgets',
+		'description'   => 'This area for Footer Widgets',
+		'before_widget' => '<aside class="footer__module %2$s">',
+		'after_widget'  => '</aside>',
+		'before_title'  => '<h4>',
+		'after_title'   => '</h4>',
+	] );
+}
+// side bar option end here
+
 // custom excerpt length
 function custom_excerpt_length( $length ) {
 	return 25;
